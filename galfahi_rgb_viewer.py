@@ -1,7 +1,6 @@
 ### 
 # 20141204, initial script provided by Chris Beaumont 
 # 20141204, modified by Yong Zheng
-
 from glue import custom_viewer, qglue
 from glue.core.data_factories import load_data
 import numpy as np
