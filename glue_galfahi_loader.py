@@ -9,51 +9,60 @@ import numpy as np
 def _load_GALFAHI_data(filename, **kwargs):
     # Data loader customized for GALFA-HI data cube
 
-    # add the primary data set with original resolution
-    cube = fits.getdata(filename)
-    header = fits.getheader(filename)
-    resolution = [header['CDELT3']*(10**(-3)),    # velocity resolution, km/s
-                  header['CDELT2']*60,            # DEC resolution, arcmin 
-                  header['CDELT1']*60]            # RA resolution, arcmin
-
-
-    # primary data, original resolution, (2048, 512, 512)
-    data1 = Data()
-    data1.coords = coordinates_from_header(header)
-    data1.add_component(cube, 'Cube_FullResolution')
-
-
     def _bin_cube(cube, factor, axis_label):
         """
         resize the cube to lower resolution
         """
         shape = cube.shape
-        if axis_label == 'Velocity':
+        if axis_label == 'VELO':
             new_shape = (shape[0]/factor, factor, shape[1], shape[2])
             return cube.reshape(new_shape).mean(axis = 1)
-        if axis_label == 'RADEC':
+        elif axis_label == 'RADEC':
             new_shape = (shape[0], shape[1]/factor, factor, shape[2]/factor, factor)
             return cube.reshape(new_shape).mean(axis = 4).mean(axis = 2)
         else: return cube
 
+    # change the header for those cubes that has been binned into low resolutions
+    def _get_new_header(header, factor, axis_label):
+ 	new_header = header
+	if axis_label == 'VELO': 
+ 	    new_header['NAXIS3'] = header['NAXIS3'] / factor
+	    new_header['CRVAL3'] = header['CRVAL3']
+ 	    new_header['CRPIX3'] = float(header['CRPIX3'] / factor)
+	    new_header['CDELT3'] = header['CDELT3'] * factor
+	elif axis_label == 'RADEC':
+	    for ax in [1, 2]: 
+	    	new_header['NAXIS%d'%(ax)] = header['NAXIS%d'%(ax)] / factor
+                new_header['CRVAL%d'%(ax)] = header['CRVAL%d'%(ax)]
+                new_header['CRPIX%d'%(ax)] = float(header['CRPIX%d'%(ax)] / factor)
+                new_header['CDELT%d'%(ax)] = header['CDELT%d'%(ax)] * factor
+	       
+	else: 
+	    new_header = header 
 
-    # lower the velocity resolution --> (512, 512, 512)
-    data2 = Data()
-    cube_name = 'Cube_VelRes_%.2f_kms' % (resolution[0] * 4)
-    data2.coords = coordinates_from_header(header)
-    data2.add_component(_bin_cube(cube, 4, 'Velocity'), cube_name)
+	## m/s --> km/s
+	new_header['CDELT3'] = new_header['CDELT3'] * (10**(-3))	    
+	return new_header
 
-    # lower the velocity resolution --> (128, 512, 512) 
-    data3 = Data()
-    cube_name = 'Cube_VelRes_%.2f_kms' % (resolution[0] * 16)
-    data3.coords = coordinates_from_header(header)
-    data3.add_component(_bin_cube(cube, 16, 'Velocity'), cube_name)
 
-    # lower the spatial resolution --> (2048, 256, 256)
-    data4 = Data()
-    cube_name = 'Cube_SpaRes_%.2f_arcmin' % (resolution[1] * 2)
-    data4.coords = coordinates_from_header(header)
-    data4.add_component(_bin_cube(cube, 2, 'RADEC'), cube_name)
+    # add the primary data set with original resolution
+    cube = fits.getdata(filename)
 
-    return [data1, data2, data3, data4]
+    # add 4 data objects with different resolutions:
+    # 0-FULL: (2048, 512, 512)
+    # 4-VELO: (512, 512, 512)
+    # 16-VELO: (126, 512, 512)
+    # 2-RADEC: (2048, 256, 256)
+    data_list = []
+    for factor, axis_label in zip([0, 4, 16, 2], ['FULL', 'VELO', 'VELO', 'RADEC']):
+        data = Data()
+	header = fits.getheader(filename)
+	new_header = _get_new_header(header, factor, axis_label)
+	cube_name = 'Cube_%.2f_km/s_%.2f_arcmin' % (new_header['CDELT3'], new_header['CDELT2']*60.)
+        data.coords = coordinates_from_header(new_header)
+        data.add_component(_bin_cube(cube, factor, axis_label), cube_name)
+	data.label  = cube_name	
+        data_list.append(data)
+
+    return data_list
 
