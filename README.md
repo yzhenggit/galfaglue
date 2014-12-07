@@ -1,4 +1,5 @@
-################ 
+galfahi_glue
+======
 1. To implement the GALFA-HI loader, put 'glue_galfahi_loader.py' 
    under the same directory as the 'config.py' file. The directory 
    containing config.py file can be found by typing in 
