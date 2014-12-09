@@ -8,7 +8,7 @@ from glue.clients.ds9norm import DS9Normalize
 from glue.core.subset import RoiSubsetState
 from glue.core.util import color2rgb
 
-# data = load_data('/Volumes/My Passport/Research/GALFA/t2s3/cubes/GALFA_HI_RA+DEC_316.00+10.35_W.fits')
+data = load_data('/Volumes/My Passport/Research/GALFA/t2s3/cubes/GALFA_HI_RA+DEC_316.00+10.35_W.fits')
 
 viewer = custom_viewer('GALFA-RGB Viewer',  # name of viewer
                        center=(900, 1100),   # slider for velocity channel
