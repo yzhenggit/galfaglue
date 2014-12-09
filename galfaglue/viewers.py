@@ -2,7 +2,6 @@ from glue import custom_viewer, qglue
 from glue.clients.ds9norm import DS9Normalize
 
 import numpy as np
-import pyfits
 
 # define the galfa-hi viewer
 galfa_rgb_viewer = custom_viewer('GALFA-HI RGB Viewer',  # name of viewer
