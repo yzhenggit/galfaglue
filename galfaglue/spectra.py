@@ -17,7 +17,7 @@ def onoff(dc, data_name, subset_name, spectrum_name="spectrum"):
 	Mydata, Mysubset = lookup_data_subset(dc, data_name, subset_name)
 	
 	# make the 2d on spectrum mask
-	mslice = Mysubset.to_mask()[0,:,:]
+	mslice = Mysubset.to_mask(np.s_[0,:,:])
 	
 	# make an off spectrum mask
 	
@@ -28,11 +28,20 @@ def onoff(dc, data_name, subset_name, spectrum_name="spectrum"):
 	annslice = annslice-coreslice
 
 	onoffspect = np.zeros(Mydata.shape[0])
+	
 	for i, slc in enumerate(Mydata["PRIMARY"]):
 		onoffspect[i] = (np.mean(slc[mslice]) -np.mean(slc[annslice]))
+	
+	print annslice.shape
+	print onoffspect.shape
 
+	#for i in xrange(onoffspect.size):
+	#	slc=Mydata["PRIMARY", i, :, :]
+	#	onoffspect[i] = (np.mean(slc[mslice]) -np.mean(slc[annslice]))
+		
+	
 	data = glue.core.Data(Tb=onoffspect, label=spectrum_name)
 	velocity_id = Mydata.id['Velocity']
-	data.add_component(Mydata["Velocity"][:,0,0], label=velocity_id)
+	data.add_component(Mydata["Velocity", :,0,0], label=velocity_id)
 	dc.append(data)	
 	
