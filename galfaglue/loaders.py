@@ -5,14 +5,35 @@ from glue.core.data_factories import has_extension
 from glue.external.astro import fits
 import numpy as np
 
-@data_factory('GALFA HI datacube', has_extension('fits'))
+@data_factory('GALFA HI cube', has_extension('fits fit'))
 def _load_GALFAHI_data(filename, **kwargs):
+    def _get_cube_center(header, cubeshape):
+        import numpy as np
+        ra  = header['CRVAL1'] + header['CDELT1'] * (np.arange(cubeshape[2])+0.5 - header['CRPIX1'])              ## degree
+        dec = header['CRVAL2'] + header['CDELT2'] * (np.arange(cubeshape[1])+0.5 - header['CRPIX2'])            ## degree
+        return np.mean(ra), np.mean(dec)
+
+    # add the primary components
+    cube = fits.getdata(filename)
+    header = fits.getheader(filename)
+    header['CDELT3'] = header['CDELT3'] * (10**(-3))        # m/s --> km/s
+    cen_ra, cen_dec = _get_cube_center(header, cube.shape)
+    nn = filename.split('/')[-1]
+    cube_name = '%s_RA%dDEC%d' % (nn[0:3], cen_ra, cen_dec)
+
+    data = Data()
+    data.coords = coordinates_from_header(header)
+    data.add_component(cube, cube_name)
+    data.label  = cube_name
+    return data
+	
+@data_factory('GALFA HI cube:LowRes', has_extension('fits fit'))
+def _load_GALFAHI_data_LowRes(filename, **kwargs):
     # Data loader customized for GALFA-HI data cube
+    # Resize the data cube into lower resolution in velocity/space
 
     def _bin_cube(cube, factor, axis_label):
-        """
-        resize the cube to lower resolution
-        """
+        # resize the cube to lower resolution
         shape = cube.shape
         if axis_label == 'VELO':
             new_shape = (shape[0]/factor, factor, shape[1], shape[2])
@@ -35,34 +56,31 @@ def _load_GALFAHI_data(filename, **kwargs):
 	    	new_header['NAXIS%d'%(ax)] = header['NAXIS%d'%(ax)] / factor
                 new_header['CRVAL%d'%(ax)] = header['CRVAL%d'%(ax)]
                 new_header['CRPIX%d'%(ax)] = float(header['CRPIX%d'%(ax)] / factor)
-                new_header['CDELT%d'%(ax)] = header['CDELT%d'%(ax)] * factor
-	       
-	else: 
-	    new_header = header 
-
-	## m/s --> km/s
+                new_header['CDELT%d'%(ax)] = header['CDELT%d'%(ax)] * factor       
+	else: new_header = header 
+	# m/s --> km/s
 	new_header['CDELT3'] = new_header['CDELT3'] * (10**(-3))	    
 	return new_header
 
+    def _get_cube_center(header, cubeshape):
+	import numpy as np
+	ra  = header['CRVAL1'] + header['CDELT1'] * (np.arange(cubeshape[2])+0.5 - header['CRPIX1'])              ## degree
+        dec = header['CRVAL2'] + header['CDELT2'] * (np.arange(cubeshape[1])+0.5 - header['CRPIX2'])            ## degree
+	return np.mean(ra), np.mean(dec)
 
-    # add the primary data set with original resolution
-    cube = fits.getdata(filename)
-
-    # add 4 data objects with different resolutions:
-    # 0-FULL: (2048, 512, 512)
-    # 4-VELO: (512, 512, 512)
-    # 16-VELO: (126, 512, 512)
-    # 2-RADEC: (2048, 256, 256)
     data_list = []
-    for factor, axis_label in zip([0, 4, 16, 2], ['FULL', 'VELO', 'VELO', 'RADEC']):
-        data = Data()
+    # add 3 data objects with different resolutions:
+    for factor, axis_label in zip([4, 16, 2], ['VELO', 'VELO', 'RADEC']):
+	cube = fits.getdata(filename)
 	header = fits.getheader(filename)
+	cen_ra, cen_dec = _get_cube_center(header, cube.shape)
 	new_header = _get_new_header(header, factor, axis_label)
-	cube_name = 'Cube_%.2f_km/s_%.2f_arcmin' % (new_header['CDELT3'], new_header['CDELT2']*60.)
+	cube_name = 'RA%dDEC%d_%.1fkm/s_%.1farcmin' % (cen_ra, cen_dec, new_header['CDELT3'], new_header['CDELT2']*60.)
+
+	data = Data()
         data.coords = coordinates_from_header(new_header)
         data.add_component(_bin_cube(cube, factor, axis_label), cube_name)
 	data.label  = cube_name	
         data_list.append(data)
-
+	del data, cube, header 
     return data_list
-
