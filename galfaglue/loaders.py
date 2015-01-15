@@ -19,13 +19,18 @@ def _load_GALFAHI_data(filename, **kwargs):
     header['CDELT3'] = header['CDELT3'] * (10**(-3))        # m/s --> km/s
     cen_ra, cen_dec = _get_cube_center(header, cube.shape)
     nn = filename.split('/')[-1]
-    cube_name = '%s_RA%dDEC%d' % (nn[0:3], cen_ra, cen_dec)
+    # cube_name = '%s_RA%dDEC%d' % (nn[0:3], cen_ra, cen_dec)
+    cube_name = 'G_%d%+.2fradec_%.1fkm/s_%.1fa' % (cen_ra, cen_dec, header['CDELT3'], header['CDELT2']*60.)
 
     data = Data()
     data.coords = coordinates_from_header(header)
     data.add_component(cube, cube_name)
     data.label  = cube_name
-    return data
+
+    data_list = []
+    data_list.append(data)
+    data_list.append(data)
+    return data_list
 	
 @data_factory('GALFA HI cube:LowRes', has_extension('fits fit'))
 def _load_GALFAHI_data_LowRes(filename, **kwargs):
@@ -75,8 +80,8 @@ def _load_GALFAHI_data_LowRes(filename, **kwargs):
 	header = fits.getheader(filename)
 	cen_ra, cen_dec = _get_cube_center(header, cube.shape)
 	new_header = _get_new_header(header, factor, axis_label)
-	cube_name = 'RA%dDEC%d_%.1fkm/s_%.1farcmin' % (cen_ra, cen_dec, new_header['CDELT3'], new_header['CDELT2']*60.)
-
+	cube_name = 'G_%d%+.2fradec_%.1fkm/s_%.1fa' % (cen_ra, cen_dec, new_header['CDELT3'], new_header['CDELT2']*60.)
+ 
 	data = Data()
         data.coords = coordinates_from_header(new_header)
         data.add_component(_bin_cube(cube, factor, axis_label), cube_name)
