@@ -1,3 +1,3 @@
-import loaders
-import viewers
-import spectra
+from . import loaders
+from . import viewers
+from . import spectra
