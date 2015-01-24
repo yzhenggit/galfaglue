@@ -1,4 +1,3 @@
-
 from distutils.core import setup
 
 setup(name='galfaglue',
@@ -7,4 +6,5 @@ setup(name='galfaglue',
       author='Y. Zheng & J. Peek',
       url='https://github.com/yhzheng/galfaglue',
       packages=['galfaglue'],
+      package_data={'galfaglue':['galfa_spectrum.png']}
      )
