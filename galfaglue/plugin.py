@@ -6,7 +6,10 @@ from glue.qt.mouse_mode import RoiMode
 from glue.qt import qt_roi
 from glue.external.qt.QtGui import QIcon
 
+from galfaglue.spectra import onoff
+
 ICON = QIcon(os.path.join(os.path.dirname(__file__), 'galfa_spectrum.png'))
+
 
 class GALFASpectrumExtractorMode(RoiMode):
 
@@ -24,20 +27,11 @@ class GALFASpectrumExtractorMode(RoiMode):
                                         edgewidth=3,
                                         alpha=1.0)
 
+
 class GALFASpectrumTool(SpectrumTool):
 
-    label = "GALFAProfile"
-
-    def _extract_subset_profile(self, subset):
-        np.random.seed(12345)
-        x = np.linspace(1., 100., 1000)
-        y = np.cumsum(np.random.normal(0,1,1000))
-        self._set_profile(x, y)
-
     def _update_from_roi(self, roi):
-        np.random.seed(12345)
-        x = np.linspace(1., 100., 1000)
-        y = np.cumsum(np.random.normal(0,1,1000))
+        x, y = onoff(self.data, self.client.display_attribute, roi)
         self._set_profile(x, y)
 
     def _setup_mouse_mode(self):
@@ -45,5 +39,3 @@ class GALFASpectrumTool(SpectrumTool):
         mode = GALFASpectrumExtractorMode(self.image_widget.client.axes,
                                           release_callback=self._update_profile)
         return mode
-
-
