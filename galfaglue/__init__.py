@@ -1,3 +1,3 @@
-from viewers import *
-from loaders import *
-from spectra import *
+from .viewers import *
+from .loaders import *
+from .spectra import *

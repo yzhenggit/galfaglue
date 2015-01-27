@@ -1,4 +1,6 @@
-from glue import custom_viewer, qglue
+from __future__ import print_function
+
+from glue import custom_viewer
 from glue.clients.ds9norm import DS9Normalize
 
 import numpy as np
@@ -21,7 +23,7 @@ def draw(axes, data, center, width, layer):
     """
     if data is None or data.size == 0 or data.ndim != 3:
         return
- 
+
     velocity = layer['Velocity', :, 0, 0]
     dec = layer['Declination', 0, :, 0]
     ra = layer['Right Ascension', 0, 0, :]
@@ -41,7 +43,7 @@ def draw(axes, data, center, width, layer):
     cenpix_b = cenpix_g + npix_hw
     b = data[max(cenpix_b - npix_hw, 0):min(cenpix_b + npix_hw, data.shape[0]-1), :, :]
 
-    # take the mean for each r, g, b slice	
+    # take the mean for each r, g, b slice
     g = np.mean(g, axis = 0)
     r = np.mean(r, axis = 0)
     b = np.mean(b, axis = 0)
@@ -60,4 +62,3 @@ def draw(axes, data, center, width, layer):
     axes.set_xlabel('RA')
     axes.set_ylabel('DEC')
     # axes.set_title(data.label)
-
