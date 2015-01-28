@@ -9,4 +9,7 @@ from galfaglue import viewers
 from galfaglue import spectra
 from galfaglue.plugin import GALFASpectrumTool
 
-tool_registry.add(GALFASpectrumTool, widget_cls=ImageWidget)
+try:
+    tool_registry.add(GALFASpectrumTool, widget_cls=ImageWidget)
+except TypeError:
+    tool_registry.add(GALFASpectrumTool, restrict_to=ImageWidget)

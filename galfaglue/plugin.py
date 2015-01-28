@@ -1,7 +1,11 @@
 import os
 import numpy as np
 
-from glue.plugins.tools.spectrum_tool import SpectrumTool
+try:
+    from glue.plugins.tools.spectrum_tool import SpectrumTool
+except ImportError:
+    from glue.plugins.spectrum_tool import SpectrumTool
+
 from glue.qt.mouse_mode import RoiMode
 from glue.qt import qt_roi
 from glue.external.qt.QtGui import QIcon
