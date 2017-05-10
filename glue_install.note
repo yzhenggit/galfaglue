@@ -1,0 +1,59 @@
+(Mac OS X)
+-- If you have homebrew installed, follow this:
+M0. Install glue dependencies:
+    - command line:
+    	brew install qt
+	brew install sip
+	brew install pyqt
+	(brew install pyside)	## this is optional, do this if pyqt installation fails
+
+M1. Install glue from source:
+    - follow instructions in L4 and L5
+
+-- If you don't have homebrew installed. 
+    - install homebrew will probably be a easier way to start
+
+(LINUX)
+L0. Install Qt:
+    - download: http://www.qt.io/download-open-source/#section-7
+      something looks like: qt-opensource-linux-x64-5.4.0.run 
+    - if it is not a exectable file, run:
+	chmod +x qt-opensource-linux-x64-5.4.0.run
+    - then command line:
+	./qt-opensource-linux-x64-5.4.0.run
+
+L1. Install SIP: 
+    - download: http://www.riverbankcomputing.com/software/sip/download    
+    - uppack, read 'README' before running the following commands
+    - command line:
+		python configure.py
+ 		make
+		make install 
+    - more instructions on sip installation can be found at 
+      http://pyqt.sourceforge.net/Docs/sip4/installation.html
+
+L2. Install Pyqt:
+    - download: http://www.riverbankcomputing.com/software/pyqt/download
+    - uppack, read 'README', following the instructions. 
+    - more info on installation:
+      http://pyqt.sourceforge.net/Docs/PyQt4/installation.html	
+    - If this doesn't work, skip this package, try step L3. 
+
+L3. Install PySide:
+    - following the instruction here:
+	http://pyside.readthedocs.org/en/latest/building/linux.html
+    - Either Pyqt or Pyside need to be installed in order to have GLUE worked. 
+
+L4. Install glue from source:
+    - clone the repository:
+		git clone https://github.com/glue-viz/glue.git
+    - Inside the glue folder:
+		python setup.py install
+
+L5. Test other glue dependencies:
+    - command line:
+		glue-deps list
+    - install all packages that listed as MISSING, most can be installed 
+      using 'pip install package_name'
+    - if a package called 'skimage' is missing, use this to install:
+		pip install scikit-image 
